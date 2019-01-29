@@ -5,11 +5,17 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
 var port = process.env.PORT || 8080;
-const cors = require("cors");
+var cors = require("cors");
+var bodyParser = require("body-parser");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var signUpRouter = require("./routes/sign-up");
+var signInRouter = require("./routes/sign-in");
+var signOutRouter = require("./routes/sign-out");
+var userDataRouter = require("./routes/user-data");
+var workoutsRouter = require("./routes/workouts");
+var exercisesRouter = require("./routes/exercises");
 
 var app = express();
 
@@ -29,13 +35,27 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(express.static("client"));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  })
+);
 
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/sign-up", signUpRouter);
+app.use("/user-data", userDataRouter);
+app.use("/sign-in", signInRouter);
+app.use("/sign-out", signOutRouter);
+app.use("/workouts", workoutsRouter);
+app.use("/exercises", exercisesRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
