@@ -32,18 +32,28 @@ router.post("/", function(req, res, next) {
 });
 
 router.put("/", function(req, res, next) {
+  console.log(req.body);
   return User.findOne({ token: req.cookies.token }).then(user => {
-    return Exercise.deleteMany({ user_id: user.id }).then(() => {
+    //находим юзера по токену
+    return Exercise.find({ user_id: user.id }).then(exercises => {
+      //находим упражнения этого юзера
       const promises = [];
-
-      req.body.map(({ name, measurement, user_id }) => {
-        promises.push(
-          new Exercise({
-            name,
-            measurement,
-            user_id
-          }).save()
-        );
+      console.log("EXERCISES:", exercises);
+      exercises.map(item => {
+        //перебераем все упражнения
+        const newExercise = req.body.find(({ _id }) => _id === item.id); //ищем в теле запроса соответствующие по id упражнения
+        newExercise //если находим
+          ? promises.push(
+              Exercise.findByIdAndUpdate(
+                //обновляем его
+                item._id,
+                {
+                  name: newExercise.name,
+                  measurement: newExercise.measurement
+                }
+              )
+            )
+          : promises.push(Exercise.findByIdAndDelete(item._id)); //если нет - удаляем
       });
 
       return Promise.all(promises).then(() => {
@@ -53,6 +63,6 @@ router.put("/", function(req, res, next) {
       });
     });
   });
-}); // хрень полная...
+}); // ПОРЕФАКТОРИТЬ
 
 module.exports = router;
